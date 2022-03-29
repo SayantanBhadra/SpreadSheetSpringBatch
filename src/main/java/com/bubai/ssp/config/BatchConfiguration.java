@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
+import com.bubai.ssp.batch.listener.CustomJobExecutionListener;
 import com.bubai.ssp.batch.processor.CustomEmployeeProcessor;
 import com.bubai.ssp.batch.writer.CustomEmployeeWriter;
 import com.bubai.ssp.entity.Employee;
@@ -59,6 +60,11 @@ public class BatchConfiguration {
 	}
 	@Bean
 	public Job employeeExcelToDatabaseJob(JobBuilderFactory jbf,@Qualifier("employeeExcelToDatabaseStep")Step employeeExcelToDatabaseStep) {
-		return jbf.get("employeeExcelToDatabaseJob").incrementer(new RunIdIncrementer()).flow(employeeExcelToDatabaseStep).end().build();
+		return jbf
+				.get("employeeExcelToDatabaseJob")
+				.incrementer(new RunIdIncrementer())
+				.listener(new CustomJobExecutionListener())
+				.flow(employeeExcelToDatabaseStep)
+				.end().build();
 	}
 }

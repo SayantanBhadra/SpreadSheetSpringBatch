@@ -28,6 +28,7 @@ public class EmployeeProcessorController {
 	public String uploadExcelFile(@RequestBody MultipartFile file) {
 		try {
 			service.splitExcelFile(file.getOriginalFilename(),file.getInputStream());
+			service.launchEmployeeToExcelDatabaseJob();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
