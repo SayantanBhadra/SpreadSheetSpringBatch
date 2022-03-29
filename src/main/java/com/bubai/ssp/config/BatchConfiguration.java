@@ -1,10 +1,14 @@
 package com.bubai.ssp.config;
 
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.flow.FlowExecutionStatus;
+import org.springframework.batch.core.job.flow.JobExecutionDecider;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.extensions.excel.RowMapper;
 import org.springframework.batch.extensions.excel.mapping.BeanWrapperRowMapper;
@@ -47,6 +51,13 @@ public class BatchConfiguration {
 		BeanWrapperRowMapper<EmployeeDTO> rowMapper = new BeanWrapperRowMapper<>();
 		rowMapper.setTargetType(EmployeeDTO.class);
 		return rowMapper;
+	}
+	
+	public JobExecutionDecider eachFileDecider() {
+		return (JobExecution jobExecution,StepExecution stepExecution)->{
+			Boolean filePresent="YES".equalsIgnoreCase(jobExecution.getExecutionContext().getString("FILEPRESENT"))?true:false;
+			return filePresent?new FlowExecutionStatus("CONTINUE"):new FlowExecutionStatus("COMPLETED");
+		};
 	}
 	@Bean
 	public Step employeeExcelToDatabaseStep(ItemReader<EmployeeDTO> excelEmployeeReader,
