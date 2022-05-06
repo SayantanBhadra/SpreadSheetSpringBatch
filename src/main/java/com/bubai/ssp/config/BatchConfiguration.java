@@ -85,7 +85,7 @@ public class BatchConfiguration {
 				.incrementer(new RunIdIncrementer())
 				.listener(new CustomJobExecutionListener())
 				.flow(this.initializeLoopForEachFile())
-				.next(this.eachFileDecider()).on("CONTINUE").flow(this.fileFlowBuilder()).next(this.initializeLoopForEachFile())
+				.next(this.eachFileDecider()).on("CONTINUE").to(this.fileFlowBuilder()).next(this.initializeLoopForEachFile())
 				.from(this.eachFileDecider()).on("COMPLETED").end().build()
 				.build();
 	}
@@ -95,7 +95,12 @@ public class BatchConfiguration {
 		return stepBuilderFactory.get("initialize_loop_for_each_file_step").tasklet(new ParameterManagerTasklet()).build();
 	}
 	
-	public Flow fileFlowBuilder() {
-		return new SimpleFlow();
+	public Step fileFlowBuilder() {
+		return stepBuilderFactory
+				.get("excelToDataBaseStep")
+				.<EmployeeDTO,Employee>chunk(1000)
+				.reader(this.excelEmployeeReader())
+				.processor(this.customEmployeeProcessor())
+				.writer(this.customEmployeeWriter()).build();
 	}
 }
